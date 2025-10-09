@@ -1,15 +1,23 @@
 import java.time.LocalDate;
 import java.time.Period;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.function.Supplier;
+import javax.swing.JTextArea;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class PenghitungUmurHelper {
 
-  // Menghitung umur secara detail (tahun, bulan, hari)
+    // 🧮 Menghitung umur secara detail (tahun, bulan, hari)
     public String hitungUmurDetail(LocalDate lahir, LocalDate sekarang) {
         Period period = Period.between(lahir, sekarang);
         return period.getYears() + " tahun, " + period.getMonths() + " bulan, " + period.getDays() + " hari";
     }
 
-// Menghitung hari ulang tahun berikutnya
+    // 🎂 Menghitung hari ulang tahun berikutnya
     public LocalDate hariUlangTahunBerikutnya(LocalDate lahir, LocalDate sekarang) {
         LocalDate ulangTahunBerikutnya = lahir.withYear(sekarang.getYear());
         if (!ulangTahunBerikutnya.isAfter(sekarang)) {
@@ -18,7 +26,7 @@ public class PenghitungUmurHelper {
         return ulangTahunBerikutnya;
     }
 
-    // Menerjemahkan teks hari ke bahasa Indonesia
+    // 📅 Menerjemahkan nama hari ke Bahasa Indonesia
     public String getDayOfWeekInIndonesian(LocalDate date) {
         switch (date.getDayOfWeek()) {
             case MONDAY: return "Senin";
@@ -29,6 +37,118 @@ public class PenghitungUmurHelper {
             case SATURDAY: return "Sabtu";
             case SUNDAY: return "Minggu";
             default: return "";
+        }
+    }
+
+    // 🌍 Menampilkan peristiwa penting dan menerjemahkannya ke Bahasa Indonesia
+    public void getPeristiwaBarisPerBaris(LocalDate tanggal, JTextArea txtAreaPeristiwa, Supplier<Boolean> shouldStop) {
+        try {
+            if (shouldStop.get()) return;
+
+            String urlString = "https://byabbe.se/on-this-day/" +
+                    tanggal.getMonthValue() + "/" + tanggal.getDayOfMonth() + "/events.json";
+
+            URL url = new URL(urlString);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 200) {
+                throw new Exception("HTTP response code: " + responseCode +
+                        ". Silakan coba lagi nanti atau cek koneksi internet.");
+            }
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+            StringBuilder content = new StringBuilder();
+            String inputLine;
+
+            while ((inputLine = in.readLine()) != null) {
+                if (shouldStop.get()) {
+                    in.close();
+                    conn.disconnect();
+                    javax.swing.SwingUtilities.invokeLater(() ->
+                            txtAreaPeristiwa.setText("❌ Pengambilan data dibatalkan.\n"));
+                    return;
+                }
+                content.append(inputLine);
+            }
+
+            in.close();
+            conn.disconnect();
+
+            JSONObject json = new JSONObject(content.toString());
+            JSONArray events = json.getJSONArray("events");
+
+            if (events.length() == 0) {
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        txtAreaPeristiwa.setText("Tidak ada peristiwa penting ditemukan pada tanggal ini."));
+                return;
+            }
+
+            // 🕓 Tampilkan setiap event satu per satu + terjemahan
+            for (int i = 0; i < events.length(); i++) {
+                if (shouldStop.get()) {
+                    javax.swing.SwingUtilities.invokeLater(() ->
+                            txtAreaPeristiwa.setText("❌ Pengambilan data dibatalkan.\n"));
+                    return;
+                }
+
+                JSONObject event = events.getJSONObject(i);
+                String year = event.getString("year");
+                String description = event.getString("description");
+
+                // Terjemahkan ke Bahasa Indonesia
+                String translated = translateToIndonesian(description);
+
+                String peristiwa = year + ": " + translated;
+
+                javax.swing.SwingUtilities.invokeLater(() ->
+                        txtAreaPeristiwa.append(peristiwa + "\n"));
+
+                Thread.sleep(200); // efek baris per baris
+            }
+
+            javax.swing.SwingUtilities.invokeLater(() ->
+                    txtAreaPeristiwa.append("\n✅ Selesai mengambil dan menerjemahkan data peristiwa.\n"));
+
+        } catch (Exception e) {
+            javax.swing.SwingUtilities.invokeLater(() ->
+                    txtAreaPeristiwa.setText("⚠️ Gagal mendapatkan data peristiwa: " + e.getMessage()));
+        }
+    }
+
+    // 🌐 Fungsi menerjemahkan teks ke Bahasa Indonesia menggunakan API Lingva.ml
+    private String translateToIndonesian(String text) {
+        try {
+            // Encode spasi agar bisa dikirim di URL
+            String encodedText = text.replace(" ", "%20");
+            String urlString = "https://lingva.ml/api/v1/en/id/" + encodedText;
+
+            URL url = new URL(urlString);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 200) {
+                throw new Exception("HTTP " + responseCode);
+            }
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"));
+            StringBuilder content = new StringBuilder();
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                content.append(inputLine);
+            }
+            in.close();
+            conn.disconnect();
+
+            JSONObject json = new JSONObject(content.toString());
+            return json.getString("translation");
+
+        } catch (Exception e) {
+            return text + " (Gagal diterjemahkan)";
         }
     }
 }
