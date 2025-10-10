@@ -3,27 +3,86 @@ Latihan 2 - Ita Khairati 2310010219
 
 # 🧮 Aplikasi Penghitung Umur (Java GUI)
 
-Aplikasi **Java Swing** untuk menghitung **umur seseorang**, menampilkan **hari ulang tahun berikutnya**, dan **peristiwa penting** pada tanggal tersebut.  
-UI interaktif dengan **JDateChooser**, **JTextField**, **JTextArea**, dan tombol warna-warni.  
+Aplikasi ini dibuat menggunakan **Java Swing** dan **NetBeans** untuk menghitung umur seseorang, menampilkan hari ulang tahun berikutnya, dan menampilkan peristiwa penting yang terjadi pada tanggal tersebut. Data peristiwa diambil dari API publik dan diterjemahkan ke Bahasa Indonesia.
 
 ---
 
 ## 🌟 Fitur Utama
 
-<div style="border:1px solid #ff69b4; padding:10px; border-radius:8px; background-color:#fff0f5;">
-<ul>
-<li>📅 Pilih tanggal lahir menggunakan <b>JDateChooser</b>.</li>
-<li>🧮 Menampilkan umur saat ini secara detail.</li>
-<li>🎉 Menampilkan hari & tanggal ulang tahun berikutnya.</li>
-<li>📝 Menampilkan peristiwa penting secara <i>baris per baris</i>.</li>
-<li>⏹️ Bisa menghentikan pengambilan data peristiwa saat tanggal lahir diganti.</li>
-<li>❌ Keluar dari aplikasi dengan tombol <b>Keluar</b>.</li>
-</ul>
-</div>
+- 📅 Memilih tanggal lahir dengan **JDateChooser**.
+- 🧮 Menghitung umur secara detail (tahun, bulan, hari).
+- 🎂 Menampilkan tanggal dan hari ulang tahun berikutnya.
+- 🌍 Menampilkan peristiwa penting pada tanggal yang dipilih, dengan terjemahan ke Bahasa Indonesia.
+- ⏹️ Pengambilan data peristiwa bisa dihentikan saat tanggal lahir diganti.
+- ❌ Keluar dari aplikasi dengan tombol **Keluar**.
 
 ---
 
-## 🎨 Tampilan Aplikasi
+## 🏗️ Struktur Kode
+
+Aplikasi ini terdiri dari **dua file utama**:
+
+1. `PenghitungUmurFrame.java`
+2. `PenghitungUmurHelper.java`
+
+---
+
+### 1️⃣ PenghitungUmurFrame.java
+
+File ini adalah **GUI utama**. Berfungsi sebagai tampilan interaktif pengguna dan menghubungkan semua logika.  
+
+**Penjelasan bagian penting:**
+
+| Bagian Kode | Fungsi |
+|-------------|--------|
+| `JDateChooser dateChooserTanggalLahir` | Pilih tanggal lahir |
+| `txtUmur` | Menampilkan umur setelah dihitung |
+| `txtHariUlangTahunBerikutnya` | Menampilkan hari ulang tahun berikutnya |
+| `txtAreaPeristiwa` | Menampilkan peristiwa penting secara baris per baris |
+| `btnHitung` | Tombol untuk memulai perhitungan umur dan ambil peristiwa |
+| `btnKeluar` | Tombol untuk keluar dari aplikasi |
+| `peristiwaThread` | Thread untuk mengambil peristiwa agar GUI tetap responsif |
+| `stopFetching` | Flag untuk menghentikan thread lama jika tanggal lahir diganti |
+
+**Alur program saat tombol Hitung ditekan:**
+
+1. Ambil tanggal lahir dari `JDateChooser`.
+2. Hitung umur dan tanggal ulang tahun berikutnya menggunakan `PenghitungUmurHelper`.
+3. Tampilkan hasil di `txtUmur` dan `txtHariUlangTahunBerikutnya`.
+4. Jalankan thread baru untuk mengambil peristiwa baris per baris.
+5. Jika tanggal lahir berubah, hentikan thread lama untuk menghindari error dan update GUI.
+
+---
+
+### 2️⃣ PenghitungUmurHelper.java
+
+File ini **mengandung semua logika perhitungan** dan pengambilan data peristiwa.  
+
+**Fungsi utama:**
+
+| Fungsi | Penjelasan |
+|--------|------------|
+| `hitungUmurDetail(LocalDate lahir, LocalDate sekarang)` | Menghitung umur dalam format "tahun, bulan, hari" menggunakan `Period`. |
+| `hariUlangTahunBerikutnya(LocalDate lahir, LocalDate sekarang)` | Menghitung tanggal ulang tahun berikutnya dari tanggal lahir. |
+| `getDayOfWeekInIndonesian(LocalDate date)` | Mengubah nama hari menjadi Bahasa Indonesia. |
+| `getPeristiwaBarisPerBaris(LocalDate tanggal, JTextArea txtAreaPeristiwa, Supplier<Boolean> shouldStop)` | Mengambil data peristiwa penting dari API `https://byabbe.se/on-this-day/` dan menampilkannya di `JTextArea`. |
+| `translateToIndonesian(String text)` | Menerjemahkan deskripsi peristiwa ke Bahasa Indonesia menggunakan API `Lingva.ml`. |
+
+**Alur pengambilan peristiwa:**
+
+1. Buat URL dari tanggal ulang tahun berikutnya.
+2. Ambil JSON dari API.
+3. Ambil array `events` dari JSON.
+4. Iterasi setiap event, terjemahkan ke Bahasa Indonesia, tampilkan di `txtAreaPeristiwa`.
+5. Gunakan `Thread.sleep(200)` untuk efek menampilkan peristiwa per baris.
+6. Thread dapat dihentikan menggunakan flag `stopFetching`.
+
+---
+
+## 🖼️ Tampilan Aplikasi
+
+- **Tampilan Utama**: Pilih tanggal lahir → klik Hitung → lihat umur & tanggal ulang tahun.
+- **Hasil Peristiwa**: Menampilkan peristiwa penting dari tanggal ulang tahun yang dipilih, diterjemahkan ke Bahasa Indonesia.
 
 <div style="display:flex; gap:20px;">
 <img src="image/1.PNG" alt="Tampilan Utama" width="300"/>
@@ -32,164 +91,32 @@ UI interaktif dengan **JDateChooser**, **JTextField**, **JTextArea**, dan tombol
 
 ---
 
-## 🧱 Komponen GUI
-
-| Komponen                 | Fungsi                                         |
-|---------------------------|-----------------------------------------------|
-| JFrame                    | Jendela utama program                          |
-| JPanel                    | Panel untuk menampung semua komponen          |
-| JLabel                    | Label teks                                     |
-| JTextField                | Menampilkan umur dan hari ulang tahun berikutnya |
-| JDateChooser              | Memilih tanggal lahir                           |
-| JButton                   | Tombol Hitung Umur & Keluar                   |
-| JTextArea                 | Menampilkan peristiwa penting                  |
-
----
-
-## ⚙️ Logika Program
-
-1. Ambil tanggal lahir dari **JDateChooser**.
-2. Hitung umur dengan **LocalDate**.
-3. Hitung tanggal ulang tahun berikutnya.
-4. Ambil peristiwa penting secara asinkron menggunakan **Thread**.
-5. Update **TextField** & **TextArea** secara real-time.
-6. Hentikan thread saat tanggal lahir diganti untuk menjaga UI responsif.
-
----
-
-## 🖱️ Event Handling
-
-| Komponen                 | Event                  | Fungsi                                         |
-|---------------------------|----------------------|-----------------------------------------------|
-| Tombol Hitung             | ActionListener       | Hitung umur, tanggal ulang tahun, tampilkan peristiwa |
-| Tombol Keluar             | ActionListener       | Keluar dari aplikasi                           |
-| JDateChooser              | PropertyChangeListener | Hapus hasil sebelumnya & hentikan thread lama  |
-| JTextArea                 | Thread Update        | Menampilkan peristiwa baris per baris          |
-
----
-
-## 💻 Cara Menjalankan Program
+## 💻 Cara Menjalankan
 
 1. Buka **NetBeans IDE**.
-2. Pilih **File → New Project → Java Application**.
-3. Buat package baru, misal: `penghitungumur`.
-4. Tambahkan file:
+2. Buat project baru → Java Application.
+3. Tambahkan **dua file**:
    - `PenghitungUmurFrame.java`
    - `PenghitungUmurHelper.java`
-5. Jalankan program dengan **Shift + F6**.
+4. Pastikan library **JCalendar** (`com.toedter.calendar.JDateChooser`) sudah ditambahkan.
+5. Jalankan project.
 
 ---
 
-## 🧰 Teknologi
+## ⚡ Catatan Penting
 
-- Java SE 8+
-- Swing GUI
-- NetBeans IDE
-- JCalendar Library (`com.toedter.calendar.JDateChooser`)
+- API peristiwa membutuhkan koneksi internet.
+- Pengambilan data bisa dibatalkan jika mengganti tanggal lahir.
+- Jika gagal terjemah, teks asli ditampilkan dengan catatan `(Gagal diterjemahkan)`.
 
 ---
 
 ## 👩‍💻 Pembuat
 
-**Nama:** ITA KHAIRATI  
-**Kelas / Mata Kuliah:** PBO2-LATIHAN2-23100101219
+**Nama:** Ita Khairati  
+**Kelas / Mata Kuliah:** PBO2-LATIHAN2-23100101219  
 
 ---
 
-## 📂 Kode Sumber Lengkap
+README ini sudah menjelaskan **dua kode** secara menyeluruh, alur, dan interaksi antar file.  
 
-```java
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-
-public class PenghitungUmurFrame extends javax.swing.JFrame {
-    private PenghitungUmurHelper helper;
-    private volatile boolean stopFetching = false;
-    private Thread peristiwaThread;
-
-    public PenghitungUmurFrame() {
-        initComponents();
-        helper = new PenghitungUmurHelper();
-        setLocationRelativeTo(null); 
-        setTitle("Aplikasi Penghitung Umur"); 
-    }
-
-    @SuppressWarnings("unchecked")
-    private void initComponents() {
-        // ... inisialisasi semua komponen GUI seperti jLabel, jPanel, dateChooser, tombol, textfield, textarea ...
-    }
-
-    private void btnHitungActionPerformed(java.awt.event.ActionEvent evt) {
-        Date tanggalLahir = dateChooserTanggalLahir.getDate();
-        LocalDate ulangTahunBerikutnya = null;
-
-        if (tanggalLahir != null) {
-            LocalDate lahir = tanggalLahir.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate sekarang = LocalDate.now();
-            String umur = helper.hitungUmurDetail(lahir, sekarang);
-            txtUmur.setText(umur);
-
-            ulangTahunBerikutnya = helper.hariUlangTahunBerikutnya(lahir, sekarang);
-            String hariUlangTahunBerikutnya = helper.getDayOfWeekInIndonesian(ulangTahunBerikutnya);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            String tanggalUlangTahunBerikutnya = ulangTahunBerikutnya.format(formatter);
-            txtHariUlangTahunBerikutnya.setText(hariUlangTahunBerikutnya + " (" + tanggalUlangTahunBerikutnya + ")");
-        }
-
-        if (ulangTahunBerikutnya == null) return;
-
-        stopFetching = true;
-        if (peristiwaThread != null && peristiwaThread.isAlive()) {
-            peristiwaThread.interrupt();
-        }
-
-        stopFetching = false;
-        final LocalDate tanggalPeristiwa = ulangTahunBerikutnya;
-        peristiwaThread = new Thread(() -> {
-            try {
-                txtAreaPeristiwa.setText("Tunggu, sedang mengambil data...\n");
-                helper.getPeristiwaBarisPerBaris(tanggalPeristiwa, txtAreaPeristiwa, () -> stopFetching);
-                if (!stopFetching) {
-                    javax.swing.SwingUtilities.invokeLater(() ->
-                        txtAreaPeristiwa.append("\nSelesai mengambil data peristiwa"));
-                }
-            } catch (Exception e) {
-                if (Thread.currentThread().isInterrupted()) {
-                    javax.swing.SwingUtilities.invokeLater(() ->
-                        txtAreaPeristiwa.setText("Pengambilan data dibatalkan.\n"));
-                }
-            }
-        });
-        peristiwaThread.start();
-    }
-
-    private void btnKeluarActionPerformed(java.awt.event.ActionEvent evt) {
-        System.exit(0);
-    }
-
-    private void dateChooserTanggalLahirPropertyChange(java.beans.PropertyChangeEvent evt) {
-        txtUmur.setText("");
-        txtHariUlangTahunBerikutnya.setText("");
-        stopFetching = true;
-        if (peristiwaThread != null && peristiwaThread.isAlive()) {
-            peristiwaThread.interrupt();
-        }
-        txtAreaPeristiwa.setText("");
-    }
-
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(() -> {
-            new PenghitungUmurFrame().setVisible(true);
-        });
-    }
-
-    // Deklarasi variabel GUI
-    private javax.swing.JButton btnHitung;
-    private javax.swing.JButton btnKeluar;
-    private com.toedter.calendar.JDateChooser dateChooserTanggalLahir;
-    private javax.swing.JTextArea txtAreaPeristiwa;
-    private javax.swing.JTextField txtHariUlangTahunBerikutnya;
-    private javax.swing.JTextField txtUmur;
-}
