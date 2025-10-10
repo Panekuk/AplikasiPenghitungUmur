@@ -26,8 +26,8 @@ UI interaktif dengan **JDateChooser**, **JTextField**, **JTextArea**, dan tombol
 ## 🎨 Tampilan Aplikasi
 
 <div style="display:flex; gap:20px;">
-<img src="image/1.png" alt="Tampilan Utama" width="300"/>
-<img src="image/2.png" alt="Hasil Perhitungan" width="300"/>
+<img src="image/1.PNG" alt="Tampilan Utama" width="300"/>
+<img src="image/2.PNG" alt="Hasil Perhitungan" width="300"/>
 </div>
 
 ---
